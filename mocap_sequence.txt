@@ -1,0 +1,43 @@
+MOTION CAPTURE TESTCASES:
+Here are the 4 testcases that I chose to use to evaluate different motion capture systems.
+Each testcase is a video of different poses, performed by a single actor. Each pose should 
+be held for 5 seconds. Every video should start with a neutral face pose.
+
+# ---- Test 1: Emotion Classes ---- #
+    1. Happiness (teeth showing)
+    2. Sadness
+    3. Fear
+    4. Disgust
+    5. Anger
+    6. Surprise
+    7. Contempt
+
+
+# ---- Test 2: Eye Movements ---- #
+    1. Right eye closed
+    2. Left eye closed
+    3. Both eyes closed, brows neutral
+    4. Both eyes closed, brows up
+    5. Both eyes closed, brows scrunched
+    6. Left brow lifted, right brow lowered
+    7. Right brow lifted, left brow lowered (omitted bc I can't do that)
+    8. Eyes open, both brows lifted 
+    9. Eyes open, both brows scrunched
+
+
+# ---- Test 3: Mouth Movements ---- #
+    1. Closed mouth smile
+    2. Open mouth smile
+    3. Lips puckered
+    4. Right lip pull
+    5. Left lip pull
+    6. 'O' mouth pose
+    7. Tongue out, mouth closed
+
+
+# ---- Test 4: Weird, Complex Poses ---- #
+    1. Cheeks puffed, brows up
+    2. Cheeks sucked in, pursed lips
+    3. Bottom lip bite
+    4. Mouth open, pulled to right
+    5. Mouth open, pulled to left
