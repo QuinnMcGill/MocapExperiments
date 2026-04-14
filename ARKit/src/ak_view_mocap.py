@@ -8,8 +8,8 @@ import cv2
 
 # ---- Parse command-line arguments ---- #
 parser = argparse.ArgumentParser(description="Visualize ARKit mocap data")
-parser.add_argument("--v", help="Path to video file", default="ARKit/data/testcase4/Testcase4_2_iPhone.mov")
-parser.add_argument("--c", help="Path to the calibrated .csv file of mocap", default="ARKit/data/testcase4/Testcase4_2_iPhone_cal.csv")
+parser.add_argument("--v", help="Path to video file", default="ARKit/data/testcase4/Testcase4.mp4")
+parser.add_argument("--c", help="Path to the calibrated .csv file of mocap", default="ARKit/data/testcase4/Testcase4_cal.csv")
 
 args = parser.parse_args()
 
@@ -43,7 +43,8 @@ while cap.isOpened() and earlyStop == False:
 
     row = df.iloc[frame_idx]
 
-    rotated = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+    #rotated = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+    rotated = frame
     height, width = rotated.shape[:2]
 
     # ===== Display all blendshapes =====
