@@ -97,7 +97,7 @@ while cap.isOpened():
         elif abs_val > 0.25:
             color = (0, 255, 255)     # yellow
         else:
-            color = (0, 0, 0)   # white
+            color = (0, 0, 0)   # black
 
         # Column positioning
         col_idx = i // max_rows_per_col            
