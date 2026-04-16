@@ -119,77 +119,17 @@ while cap.isOpened():
         
         frame_idx += 1
 
-        # ---- Show both ---- #
-        cv2.imshow("ARKit", frame_arkit)
-        cv2.imshow("MediaPipe", frame_mp)
+    # ---- Show both ---- #
+    cv2.imshow("ARKit", frame_arkit)
+    cv2.imshow("MediaPipe", frame_mp)
 
-        key = cv2.waitKey(10) & 0xFF
+    key = cv2.waitKey(10) & 0xFF
 
-        if key == ord(' '):   # pause toggle
-            paused = not paused
+    if key == ord(' '):   # pause toggle
+        paused = not paused
 
-        elif key == 27: # ESC to quit
-            break
-
-# # ======== Structure Goal ======== #
-# while True:
-
-#     if not paused:
-#         ret, frame = cap.read()
-#         if not ret:
-#             break
-
-#         frame_arkit = frame.copy()
-#         frame_mp = frame.copy()
-
-#         # ---- Get rows ---- #
-#         if frame_idx < len(arkit_df):
-#             arkit_row = arkit_df.iloc[frame_idx]
-#         else:
-#             arkit_row = None
-
-#         if frame_idx < len(mp_df):
-#             mp_row = mp_df.iloc[frame_idx]
-#         else:
-#             mp_row = None
-
-#         # ---- Overlay text ---- #
-#         y0 = 30
-#         dy = 20
-
-#         for i, key in enumerate(common_keys[:MAX_ROWS]):
-
-#             y = y0 + i * dy
-
-#             # ARKit values
-#             if arkit_row is not None and key in arkit_row:
-#                 val = arkit_row[key]
-#                 text = f"{key}: {val:.2f}"
-#                 cv2.putText(frame_arkit, text, (10, y),
-#                             cv2.FONT_HERSHEY_SIMPLEX,
-#                             0.5, (0, 255, 0), 1)
-
-#             # MediaPipe values
-#             if mp_row is not None and key in mp_row:
-#                 val = mp_row[key]
-#                 text = f"{key}: {val:.2f}"
-#                 cv2.putText(frame_mp, text, (10, y),
-#                             cv2.FONT_HERSHEY_SIMPLEX,
-#                             0.5, (255, 0, 0), 1)
-
-#         frame_idx += 1
-
-#     # ---- Show both ---- #
-#     cv2.imshow("ARKit", frame_arkit)
-#     cv2.imshow("MediaPipe", frame_mp)
-
-#     key = cv2.waitKey(30) & 0xFF
-
-#     if key == ord(' '):   # pause toggle
-#         paused = not paused
-
-#     elif key == ord('q'):
-#         break
+    elif key == 27: # ESC to quit
+        break
 
 cap.release()
 cv2.destroyAllWindows()
