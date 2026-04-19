@@ -1,0 +1,29 @@
+2026-04-18:
+    - It seems difficult to accuately capture the muscle activation intensity information using ARKit
+        - This is an important aspect of accurately transfering the semantics of facial motion to a character (especially
+        when that character has different facial anatomy)
+        - This was seen when I tried using ARKit to animate a cartoonish character
+        - I would do a dramatic bro raise, and hers would subtley lift
+    - I'm scared of getting to creative with input modalities (RGBD cameras and stereo vision)
+        - Totally out of my wheelhouse
+        - I would probably need to work from an existing solution bc I would be completely lost
+2026-04-19: 
+    - Project Idea: Facial motion tracking aided by 3D Gaussian Head Avatar
+        - Facial motion tracking with only RGB input can miss subtleties and make mistakes (i.e. sticking out your tongue 
+        can mess with lip tracking, pursed lips versus tunnel mouth)
+    - Project Idea: Improved tongue, lips and mouth tracking with morphable mouth model
+        - Both ARKit and MediaPipe can miss details around the mouth and inaccurately capture capture complex mouth movements
+        - Augment an existing markerless motion capture system by applying a custom morphable model to the actor's mouth
+        - In each frame, apply a model to capture the contours of the user's mouth. Replace the landmarks from the 
+        base tracking model with keypoints from the custom mouth model
+        - Goals:
+            1. Have the custom mouth model more capable of representing the various poses a mouth can make
+            2. Consider tongue placement, it shouldn't throw off tracking
+            3. Play around with the optimal number of keypoints. We want smooth, natural lip boundaries but we also want to 
+            be able to capture a wide range of mouth poses, including extreme movements.
+        - Proposed Plan: 
+            1. Start with mouth detection. Create a bounding box around the mouth. (maybe consider an individualized approach)
+            2. Instance segementation for upper lip, lower lip, tongue. 
+            3. Is there a way to consider the range of motion for eah keypoint?
+
+    
