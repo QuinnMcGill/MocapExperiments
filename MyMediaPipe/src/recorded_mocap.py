@@ -39,9 +39,10 @@ earlyStop = False
 base_options = python.BaseOptions(model_asset_path="MyMediaPipe/models/face_landmarker_v2_with_blendshapes.task")
 options = vision.FaceLandmarkerOptions(base_options=base_options, running_mode=vision.RunningMode.VIDEO, output_face_blendshapes=True, num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
-print("Successfully built the model")
 
 # Load the video file
+# cv2.namedWindow("MediaPipe Facial Motion Capture", cv2.WINDOW_NORMAL)
+# cv2.resizeWindow("MediaPipe Facial Motion Capture", 640, 1440)
 cap = cv2.VideoCapture(args.v)
 mp_results_list = []
 
@@ -50,7 +51,7 @@ while cap.isOpened():
     if not ret:
         break
 
-    # Convert to RGB
+    # Convert to RGB 
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     mp_image = mp.Image(
@@ -115,7 +116,7 @@ while cap.isOpened():
         cv2.putText(annotated_image, text, (x, y),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.7, color, 2)
-    cv2.imshow("Annotated Video", annotated_image)
+    # cv2.imshow("MediaPipe Facial Motion Capture", annotated_image)
 
     # ==== Flow control ==== #
     key = cv2.waitKey(5) & 0xFF
@@ -123,6 +124,7 @@ while cap.isOpened():
     # ESC to quit
     if key == 27:
         earlyStop = True
+        break
 
     # SPACE to pause
     if key == ord(' '):

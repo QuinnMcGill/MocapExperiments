@@ -13,6 +13,7 @@
         can mess with lip tracking, pursed lips versus tunnel mouth)
     - Project Idea: Improved tongue, lips and mouth tracking with morphable mouth model
         - Both ARKit and MediaPipe can miss details around the mouth and inaccurately capture capture complex mouth movements
+        - Occlusions because of the tongue and teeth cause problems
         - Augment an existing markerless motion capture system by applying a custom morphable model to the actor's mouth
         - In each frame, apply a model to capture the contours of the user's mouth. Replace the landmarks from the 
         base tracking model with keypoints from the custom mouth model
@@ -23,7 +24,9 @@
             be able to capture a wide range of mouth poses, including extreme movements.
         - Proposed Plan: 
             1. Start with mouth detection. Create a bounding box around the mouth. (maybe consider an individualized approach)
-            2. Instance segementation for upper lip, lower lip, tongue. 
-            3. Is there a way to consider the range of motion for eah keypoint?
+                1. a) If you do want an individualized approach, consider a series of mouth poses (i.e. neutral, smile with teeth, 
+                tongue out) to calibrate the system or initialize some weights. 
+            2. Instance segementation for upper lip, lower lip, teeth, and tongue. 
+            3. Is there a way to consider the range of motion for each keypoint?
 
     
