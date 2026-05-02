@@ -1,0 +1,2 @@
+# Check mouth tracking with MediaPipe tracking of recorded performance
+python MyMediaPipe/src/recorded_mocap.py --v ARKit/data/testcase3/Testcase3.mp4 --c MyMediaPipe/results/testcase3.csv
