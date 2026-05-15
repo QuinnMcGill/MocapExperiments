@@ -30,6 +30,10 @@ line_height = 30
 max_rows_per_col = 31  # controls column height
 col_width = 290       # horizontal spacing between columns
 
+# ---- Image display parameters ---- #
+max_width = 1280
+max_height = 720
+
 # ---- Control paramters ---- #
 frame_idx = 0
 earlyStop = False
@@ -41,8 +45,8 @@ options = vision.FaceLandmarkerOptions(base_options=base_options, running_mode=v
 detector = vision.FaceLandmarker.create_from_options(options)
 
 # Load the video file
-# cv2.namedWindow("MediaPipe Facial Motion Capture", cv2.WINDOW_NORMAL)
-# cv2.resizeWindow("MediaPipe Facial Motion Capture", 640, 1440)
+cv2.namedWindow("MediaPipe Facial Motion Capture", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("MediaPipe Facial Motion Capture", 640, 1440)
 cap = cv2.VideoCapture(args.v)
 mp_results_list = []
 
@@ -86,7 +90,19 @@ while cap.isOpened():
     annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
     # ---- Add blendshapes ---- #
-    height, width = annotated_image.shape[:2]
+    h, w = annotated_image.shape[:2]
+
+    # Scale relative to 1080p
+    scale = h / 1080
+
+    font_scale = min(1.5, max(0.5, 0.7 * scale))
+    thickness = max(1, int(2 * scale))
+    line_height = int(30 * scale)
+    col_width = int(260 * scale)
+
+    start_x = int(20 * scale)
+    start_y = int(40 * scale)
+
     row = temp_df.iloc[0]
 
     for i, col in enumerate(blendshape_cols):
@@ -106,7 +122,7 @@ while cap.isOpened():
         row_idx = i % max_rows_per_col
 
         if col_idx == 1:
-            x = width - start_x - col_width
+            x = w - start_x - col_width
         else:
             x = start_x + col_idx * col_width
         y = start_y + row_idx * line_height
@@ -115,8 +131,8 @@ while cap.isOpened():
 
         cv2.putText(annotated_image, text, (x, y),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7, color, 2)
-    # cv2.imshow("MediaPipe Facial Motion Capture", annotated_image)
+                    font_scale, color, thickness)
+    cv2.imshow("MediaPipe Facial Motion Capture", annotated_image)
 
     # ==== Flow control ==== #
     key = cv2.waitKey(5) & 0xFF
