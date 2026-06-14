@@ -1,3 +1,8 @@
 .vscode
 .venv
+.venv_310
 MyMediaPipe/src/__pycache__/*
+MediaPipe/video_outputs
+MayaFaces.zip
+external
+data

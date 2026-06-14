@@ -38,6 +38,10 @@ max_height = 720
 frame_idx = 0
 earlyStop = False
 
+# ---- Variables for output video ---- #
+tc_name = args.v.split("/")[2]
+output_video_path = "MyMediaPipe/video_outputs/" + tc_name + "_mediapipe.mp4"
+
 # ==== Tracking with MediaPipe ==== #
 # Load the .task model and set up the options
 base_options = python.BaseOptions(model_asset_path="MyMediaPipe/models/face_landmarker_v2_with_blendshapes.task")
@@ -48,6 +52,23 @@ detector = vision.FaceLandmarker.create_from_options(options)
 cv2.namedWindow("MediaPipe Facial Motion Capture", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("MediaPipe Facial Motion Capture", 640, 1440)
 cap = cv2.VideoCapture(args.v)
+
+# Get input video properties
+fps = cap.get(cv2.CAP_PROP_FPS)
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+# Create MP4 writer
+fourcc = cv2.VideoWriter.fourcc(*"mp4v")
+video_writer = cv2.VideoWriter(
+    output_video_path,
+    fourcc,
+    fps,
+    (frame_width, frame_height)
+)
+
+print("Output path:", output_video_path)
+print("VideoWriter opened:", video_writer.isOpened())
 mp_results_list = []
 
 while cap.isOpened():
@@ -133,6 +154,7 @@ while cap.isOpened():
                     cv2.FONT_HERSHEY_SIMPLEX,
                     font_scale, color, thickness)
     cv2.imshow("MediaPipe Facial Motion Capture", annotated_image)
+    video_writer.write(annotated_image)
 
     # ==== Flow control ==== #
     key = cv2.waitKey(5) & 0xFF
@@ -163,3 +185,7 @@ if earlyStop == False:
     mp_df = pd.DataFrame(mp_results_list)
     mp_df.fillna(0, inplace=True)
     mp_df.to_csv(args.c)
+
+cap.release()
+video_writer.release()
+cv2.destroyAllWindows()
