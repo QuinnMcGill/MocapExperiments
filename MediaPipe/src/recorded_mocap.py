@@ -16,8 +16,9 @@ import mp_helpers as mph
 
 # ==== Parse command-line arguments ==== #
 parser = argparse.ArgumentParser(description="Visualize ARKit mocap data")
-parser.add_argument("--v", help="Path to video file", default="ARKit/data/testcase4/Testcase4.mp4")
-parser.add_argument("--c", help="Path to csv file (to be created)", default="MyMediaPipe/results/testcase4.csv")
+parser.add_argument("--v", help="Path to video file", default="data/tc6.mp4")
+parser.add_argument("--c", help="Path to csv file (to be created)", default="MediaPipe/results/testcase6.csv")
+parser.add_argument("--bs", help="Add the blendshapes to the output video", default=0, type=int)
 
 args = parser.parse_args()
 
@@ -39,12 +40,12 @@ frame_idx = 0
 earlyStop = False
 
 # ---- Variables for output video ---- #
-tc_name = args.v.split("/")[2]
-output_video_path = "MyMediaPipe/video_outputs/" + tc_name + "_mediapipe.mp4"
+tc_name = args.v.split("/")[-1].split(".")[0]
+output_video_path = "MediaPipe/video_outputs/" + tc_name + "_gray_mediapipe.mp4"
 
 # ==== Tracking with MediaPipe ==== #
 # Load the .task model and set up the options
-base_options = python.BaseOptions(model_asset_path="MyMediaPipe/models/face_landmarker_v2_with_blendshapes.task")
+base_options = python.BaseOptions(model_asset_path="MediaPipe/models/face_landmarker_v2_with_blendshapes.task")
 options = vision.FaceLandmarkerOptions(base_options=base_options, running_mode=vision.RunningMode.VIDEO, output_face_blendshapes=True, num_faces=1)
 detector = vision.FaceLandmarker.create_from_options(options)
 
@@ -88,6 +89,8 @@ while cap.isOpened():
     timestamp_ms = int((frame_idx / fps) * 1000)
     result = detector.detect_for_video(mp_image, timestamp_ms)
 
+    blendshape_cols = []  # Initialize blendshape columns for this frame
+
     # ===== Extract blendshapes ===== #
     if result.face_blendshapes:
         blendshapes = result.face_blendshapes[0]
@@ -107,52 +110,55 @@ while cap.isOpened():
 
     # ==== Visualize the tracking ==== #
     # ---- Landmarks and mesh ---- #
-    annotated_image = mph.draw_landmarks_on_image(mp_image.numpy_view(), result)
+    annotated_image = mph.draw_mediapipe_lip_contours(mp_image.numpy_view(), result, contour_color=mph.WHITE_COLOR)
+    annotated_image = mph.draw_mediapipe_lip_contour_landmarks(annotated_image, result, circle_radius=4, landmark_color=mph.RED_COLOR)
     annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
-    # ---- Add blendshapes ---- #
-    h, w = annotated_image.shape[:2]
+    # ---- Add blendshapes to output video ---- #
+    if args.bs == 1:
+        h, w = annotated_image.shape[:2]
 
-    # Scale relative to 1080p
-    scale = h / 1080
+        # Scale relative to 1080p
+        scale = h / 1080
 
-    font_scale = min(1.5, max(0.5, 0.7 * scale))
-    thickness = max(1, int(2 * scale))
-    line_height = int(30 * scale)
-    col_width = int(260 * scale)
+        font_scale = min(1.5, max(0.5, 0.7 * scale))
+        thickness = max(1, int(2 * scale))
+        line_height = int(30 * scale)
+        col_width = int(260 * scale)
 
-    start_x = int(20 * scale)
-    start_y = int(40 * scale)
+        start_x = int(20 * scale)
+        start_y = int(40 * scale)
 
-    row = temp_df.iloc[0]
+        row = temp_df.iloc[0]
 
-    for i, col in enumerate(blendshape_cols):
-        value = row[col]
-        abs_val = abs(value)
+        for i, col in enumerate(blendshape_cols):
+            value = row[col]
+            abs_val = abs(value)
 
-        # Color logic (BGR format)
-        if abs_val > 0.5:
-            color = (0, 255, 0)       # green
-        elif abs_val > 0.25:
-            color = (0, 255, 255)     # yellow
-        else:
-            color = (0, 0, 0)   # black
+            # Color logic (BGR format)
+            if abs_val > 0.5:
+                color = (0, 255, 0)       # green
+            elif abs_val > 0.25:
+                color = (0, 255, 255)     # yellow
+            else:
+                color = (0, 0, 0)   # black
 
-        # Column positioning
-        col_idx = i // max_rows_per_col            
-        row_idx = i % max_rows_per_col
+            # Column positioning
+            col_idx = i // max_rows_per_col            
+            row_idx = i % max_rows_per_col
 
-        if col_idx == 1:
-            x = w - start_x - col_width
-        else:
-            x = start_x + col_idx * col_width
-        y = start_y + row_idx * line_height
+            if col_idx == 1:
+                x = w - start_x - col_width
+            else:
+                x = start_x + col_idx * col_width
+            y = start_y + row_idx * line_height
 
-        text = f"{col}: {value:.2f}"
+            text = f"{col}: {value:.2f}"
 
-        cv2.putText(annotated_image, text, (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    font_scale, color, thickness)
+            cv2.putText(annotated_image, text, (x, y),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        font_scale, color, thickness)
+        
     cv2.imshow("MediaPipe Facial Motion Capture", annotated_image)
     video_writer.write(annotated_image)
 

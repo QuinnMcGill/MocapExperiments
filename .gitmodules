@@ -1,6 +1,6 @@
 [submodule "external/TongueSAM"]
 	path = external/TongueSAM
 	url = https://github.com/QuinnMcGill/TongueSAM.git
-[submodule "external/OpenFace"]
-	path = external/OpenFace
+[submodule "external/OpenFace3.0"]
+	path = external/OpenFace3.0
 	url = https://github.com/CMU-MultiComp-Lab/OpenFace-3.0.git
