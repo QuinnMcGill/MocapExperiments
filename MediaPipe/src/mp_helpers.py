@@ -17,8 +17,8 @@ WHITE_COLOR = (255, 255, 255)
 MEDIAPIPE_MOUTH_LAYOUT = {
     "top_outer": [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291],           # Left outer corner to right outer corner (includes corners)
     "top_inner": [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308],          # Left inner corner to left inner corner (includes corners)
-    "bottom_inner": [324, 318, 402, 317, 14, 87, 178, 88, 95],                # Right inner corner to left inner corner (excludes corners)
-    "bottom_outer": [375, 321, 405, 314, 17, 84, 181, 91, 146]                # Right outer corner to left outer corner (excludes corners)
+    "bottom_inner": [308, 324, 318, 402, 317, 14, 87, 178, 88, 95, 78],                # Right inner corner to left inner corner (excludes corners)
+    "bottom_outer": [291, 375, 321, 405, 314, 17, 84, 181, 91, 146, 61]                # Right outer corner to left outer corner (excludes corners)
 }
 
 MEDIAPIPE_LIP_CONTOUR_INDICES = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291,
@@ -203,3 +203,142 @@ def visualize_landmarks(image, landmarks, radius=6, color=(0, 255, 0), draw_indi
 #                 connection_drawing_spec=contours_drawing_spec)
         
 #     return annotated_image
+
+# ====== Saving Mediapipe Results ====== #
+
+def create_mediapipe_lip_polygon_row(
+    detection_result,
+    frame_idx,
+    timestamp,
+    frame_width,
+    frame_height
+):
+    """
+    Create a CSV row containing upper- and lower-lip polygons
+    from MediaPipe Face Landmarker landmarks.
+
+    Parameters
+    ----------
+    face_landmarks :
+        MediaPipe face landmarks detection result.
+
+    frame :
+        Video frame index.
+
+    timestamp :
+        Frame timestamp.
+
+    face_id :
+        MediaPipe face index.
+
+    frame_width :
+        Width of the original video frame in pixels.
+
+    frame_height :
+        Height of the original video frame in pixels.
+
+    Returns
+    -------
+    dict
+        Dictionary containing frame metadata and polygon
+        coordinates in pixel space.
+    """
+
+    # ---------------------------------------------------------
+    # Convert all normalized MediaPipe landmarks to pixel coords
+    # ---------------------------------------------------------
+
+    face_landmarks_list = detection_result.face_landmarks
+    face_landmarks = face_landmarks_list[0]  # Assuming only one face is detected for simplicity
+
+    landmarks = np.array([
+        [
+            landmark.x * frame_width,
+            landmark.y * frame_height
+        ]
+        for landmark in face_landmarks
+    ], dtype=np.float32)
+
+    # ---------------------------------------------------------
+    # Extract the four lip contours
+    # ---------------------------------------------------------
+
+    top_outer = landmarks[MEDIAPIPE_MOUTH_LAYOUT["top_outer"]]
+
+    top_inner = landmarks[MEDIAPIPE_MOUTH_LAYOUT["top_inner"]]
+
+    bottom_inner = landmarks[MEDIAPIPE_MOUTH_LAYOUT["bottom_inner"]]
+
+    bottom_outer = landmarks[MEDIAPIPE_MOUTH_LAYOUT["bottom_outer"]]
+
+
+    # ---------------------------------------------------------
+    # Construct upper lip polygon
+    #
+    # top_outer:
+    #     left -> right
+    #
+    # top_inner:
+    #     left -> right
+    #
+    # Reverse top_inner so the polygon travels continuously
+    # around the upper lip.
+    # ---------------------------------------------------------
+
+    upper_polygon = np.concatenate(
+        [
+            top_outer,
+            top_inner[::-1]
+        ],
+        axis=0
+    )
+
+    # ---------------------------------------------------------
+    # Construct lower lip polygon
+    #
+    # bottom_inner:
+    #     right -> left
+    #
+    # bottom_outer:
+    #     right -> left
+    #
+    # Reverse bottom_outer so that we travel continuously
+    # around the lower lip.
+    # ---------------------------------------------------------
+
+    lower_polygon = np.concatenate(
+        [
+            bottom_inner,
+            bottom_outer[::-1]
+        ],
+        axis=0
+    )
+
+    # ---------------------------------------------------------
+    # Build CSV row
+    # ---------------------------------------------------------
+
+    row = {
+        "frame": frame_idx,
+        "timestamp": timestamp
+    }
+
+    # ---------------------------------------------------------
+    # Upper polygon coordinates
+    # ---------------------------------------------------------
+
+    for i, (x, y) in enumerate(upper_polygon):
+
+        row[f"upper_x_{i}"] = x
+        row[f"upper_y_{i}"] = y
+
+    # ---------------------------------------------------------
+    # Lower polygon coordinates
+    # ---------------------------------------------------------
+
+    for i, (x, y) in enumerate(lower_polygon):
+
+        row[f"lower_x_{i}"] = x
+        row[f"lower_y_{i}"] = y
+
+    return row

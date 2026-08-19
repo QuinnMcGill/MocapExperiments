@@ -13,7 +13,7 @@ args = parser.parse_args()
 tc_name = args.v.split(".")[0]
 input_video_path = "data/" + args.v
 print("Input path:", input_video_path)
-output_video_path = "data/editted_vids/" + tc_name + "_editted.mp4"
+output_video_path = "data/top_lip_mask/" + tc_name + "_editted.mp4"
 
 cap = cv2.VideoCapture(input_video_path)
 
@@ -33,6 +33,25 @@ video_writer = cv2.VideoWriter(
 
 print("Output path:", output_video_path)
 
+mask_1_start = np.array([0, 120, 70])
+mask_1_end = np.array([5, 210, 190])
+mask_2_start = np.array([175, 120, 70])
+mask_2_end = np.array([179, 210, 190])
+
+print("Red Mask 1: ")
+print("H: ", round(mask_1_start[0]/180 * 360), " -> ", round(mask_1_end[0]/180 * 360))
+print("S: ", round(mask_1_start[1]/255 * 100), " -> ", round(mask_1_end[1]/255 *100))
+print("V: ", round(mask_1_start[2]/255 * 100), " -> ", round(mask_1_end[2]/255 *100))
+
+print("Red Mask 2: ")
+print("H: ", mask_2_start[0], " -> ", mask_2_end[0])
+print("S: ", round(mask_2_start[1]/255 * 100), " -> ", round(mask_2_end[1]/255 *100))
+print("V: ", round(mask_2_start[2]/255 * 100), " -> ", round(mask_2_end[2]/255 *100))
+
+cap.release()
+
+raise SystemExit
+
 while cap.isOpened():
 
     ret, frame = cap.read()
@@ -41,19 +60,19 @@ while cap.isOpened():
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Decent
-    # green_mask = cv2.inRange(
-    #     hsv,
-    #     np.array([35, 50, 30]),
-    #     np.array([90, 255, 255])
-    # )
+    red_mask_1 = cv2.inRange(
+        hsv,
+        np.array([0, 120, 70]),
+        np.array([5, 210, 190])
+    )
 
-    green_mask = cv2.inRange(
-            hsv,
-            np.array([35, 40, 25]),
-            np.array([90, 255, 255])
-        ) 
+    red_mask_2 = cv2.inRange(
+        hsv,
+        np.array([175, 120, 70]),
+        np.array([179, 210, 190])
+    )
 
+    red_mask = cv2.bitwise_or(red_mask_1, red_mask_2)
     # Change hue to red while preserving saturation/value
     hsv_modified = hsv.copy()
 
@@ -61,8 +80,9 @@ while cap.isOpened():
     # hsv_modified[..., 0][green_mask > 0] = 170
     # hsv_modified[..., 1][green_mask > 0] = 180
 
-    hsv_modified[..., 0][green_mask > 0] = 0
-    hsv_modified[..., 2][green_mask > 0] -= 10
+    hsv_modified[..., 0][red_mask > 0] = round(180/360.0 * 180)
+    hsv_modified[..., 1][red_mask > 0] = 255
+    hsv_modified[..., 2][red_mask > 0] = 255
 
     frame_modified = cv2.cvtColor(
         hsv_modified,

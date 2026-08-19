@@ -17,7 +17,6 @@ import mp_helpers as mph
 # ==== Parse command-line arguments ==== #
 parser = argparse.ArgumentParser(description="Visualize ARKit mocap data")
 parser.add_argument("--v", help="Path to video file", default="data/tc6.mp4")
-parser.add_argument("--c", help="Path to csv file (to be created)", default="MediaPipe/results/testcase6.csv")
 parser.add_argument("--bs", help="Add the blendshapes to the output video", default=0, type=int)
 
 args = parser.parse_args()
@@ -41,7 +40,11 @@ earlyStop = False
 
 # ---- Variables for output video ---- #
 tc_name = args.v.split("/")[-1].split(".")[0]
-output_video_path = "MediaPipe/video_outputs/" + tc_name + "_gray_mediapipe.mp4"
+output_video_path = "MediaPipe/video_outputs/" + tc_name + "_mediapipe.mp4"
+
+# ---- Variables for output csv files ---- #
+bs_csv_path = "MediaPipe/bs_results/" + tc_name + "_bs.csv"
+lm_csv_path = "MediaPipe/lip_polygon_output/" + tc_name + "_polygons.csv"
 
 # ==== Tracking with MediaPipe ==== #
 # Load the .task model and set up the options
@@ -70,7 +73,8 @@ video_writer = cv2.VideoWriter(
 
 print("Output path:", output_video_path)
 print("VideoWriter opened:", video_writer.isOpened())
-mp_results_list = []
+bs_results_list = []
+lm_results_list = []
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -89,24 +93,31 @@ while cap.isOpened():
     timestamp_ms = int((frame_idx / fps) * 1000)
     result = detector.detect_for_video(mp_image, timestamp_ms)
 
-    blendshape_cols = []  # Initialize blendshape columns for this frame
+    blendshape_cols = []    # Initialize blendshape columns for this frame
+    temp_bs_df = None       # To store the blandshape results for a single frame
 
     # ===== Extract blendshapes ===== #
-    if result.face_blendshapes:
-        blendshapes = result.face_blendshapes[0]
+    if args.bs == 1:
+        if result.face_blendshapes:
+            blendshapes = result.face_blendshapes[0]
 
-        row_dict = {"frame": frame_idx}
+            row_dict = {"frame": frame_idx}
 
-        for bs in blendshapes:
-            row_dict[bs.category_name] = bs.score
+            for bs in blendshapes:
+                row_dict[bs.category_name] = bs.score
 
-        # Only define this when blendshapes exist
-            blendshape_cols = [bs.category_name for bs in blendshapes]
-    else:
-        row_dict = {"frame": frame_idx}
+            # Only define this when blendshapes exist
+                blendshape_cols = [bs.category_name for bs in blendshapes]
+        else:
+            row_dict = {"frame": frame_idx}
 
-    mp_results_list.append(row_dict)                # for the total dataframe
-    temp_df = temp_df = pd.DataFrame([row_dict])    # convenient format for single frame
+        bs_results_list.append(row_dict)                # for the total dataframe
+        temp_bs_df = pd.DataFrame([row_dict])    # convenient format for single frame
+
+    # ===== Extract Landmark Locations ===== #
+    lm_dict = mph.create_mediapipe_lip_polygon_row(detection_result=result, timestamp=timestamp_ms, frame_idx=frame_idx, 
+                                                   frame_height=frame_height, frame_width=frame_width)
+    lm_results_list.append(lm_dict)
 
     # ==== Visualize the tracking ==== #
     # ---- Landmarks and mesh ---- #
@@ -115,7 +126,7 @@ while cap.isOpened():
     annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR)
 
     # ---- Add blendshapes to output video ---- #
-    if args.bs == 1:
+    if args.bs == 1 and temp_bs_df is not None:
         h, w = annotated_image.shape[:2]
 
         # Scale relative to 1080p
@@ -129,7 +140,7 @@ while cap.isOpened():
         start_x = int(20 * scale)
         start_y = int(40 * scale)
 
-        row = temp_df.iloc[0]
+        row = temp_bs_df.iloc[0]
 
         for i, col in enumerate(blendshape_cols):
             value = row[col]
@@ -188,9 +199,14 @@ while cap.isOpened():
 
 # ==== Save the results ==== #
 if earlyStop == False:
-    mp_df = pd.DataFrame(mp_results_list)
-    mp_df.fillna(0, inplace=True)
-    mp_df.to_csv(args.c)
+    lm_df = pd.DataFrame(lm_results_list)
+    lm_df.fillna(0, inplace=True)
+    lm_df.to_csv(lm_csv_path)
+
+    if args.bs == 1: 
+        bs_df = pd.DataFrame(bs_results_list)
+        bs_df.fillna(0, inplace=True)
+        bs_df.to_csv(bs_csv_path)
 
 cap.release()
 video_writer.release()
