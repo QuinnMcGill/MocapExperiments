@@ -1,6 +1,0 @@
-frame_idx,image_width,image_height,outer_left_corner_x,outer_left_corner_y,inner_left_corner_x,inner_left_corner_y,outer_right_corner_x,outer_right_corner_y,inner_right_corner_x,inner_right_corner_y,cupids_bow_center_x,cupids_bow_center_y,left_cupids_peak_x,left_cupids_peak_y,right_cupids_peak_x,right_cupids_peak_y,top_inner_center_x,top_inner_center_y,bottom_inner_center_x,bottom_inner_center_y,bottom_outer_center_x,bottom_outer_center_y
-55,1080,1920,339,1054,361,1054,720,1042,688,1030,538,921,500,911,589,907,541,964,458,1099,472,1169
-132,1080,1920,385,1020,425,1004,773,1032,748,1030,567,877,516,867,607,867,567,927,660,1064,645,1133
-254,1080,1920,379,1048,401,1044,716,1036,698,1030,538,855,494,843,589,838,541,901,563,1175,567,1242
-346,1080,1920,385,976,444,964,682,970,613,964,532,830,492,830,573,826,534,905,534,1014,538,1089
-452,1080,1920,391,976,432,976,734,1018,706,1018,504,820,460,790,551,826,494,883,682,1111,658,1183

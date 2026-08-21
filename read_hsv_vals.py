@@ -8,7 +8,7 @@ def get_hsv_at_click(event, x, y, flags, param):
         # OpenCV uses H: 0-179, S: 0-255, V: 0-255
         h, s, v = hsv_frame[y, x]
 
-        print(f"Clicked ({x}, {y}) -> HSV: ({h}, {s}, {v})")
+        print(f"Clicked ({x}, {y}) -> OpenCV HSV: ({h}, {s}, {v}) -> Online Picker HSV: ({round(h/180*355)}, {round(s/255*100)}, {round(v/255*100)})")
 
 
 parser = argparse.ArgumentParser()
